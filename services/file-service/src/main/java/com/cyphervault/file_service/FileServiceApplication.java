@@ -1,0 +1,15 @@
+package com.cyphervault.file_service;
+
+import com.cyphervault.file_service.config.FileStorageProperties;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+
+@SpringBootApplication
+@EnableConfigurationProperties(FileStorageProperties.class)
+public class FileServiceApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(FileServiceApplication.class, args);
+    }
+}

@@ -1,4 +1,4 @@
-package com.cyphervault.account_service.Config;
+package com.cyphervault.account_service.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 

@@ -4,15 +4,15 @@ import com.cyphervault.fabric.account.dto.proof.FabricEndorsementInfo;
 import com.cyphervault.fabric.account.dto.proof.FabricProofEnvelope;
 import com.google.protobuf.ByteString;
 import org.hyperledger.fabric.client.Transaction;
-import org.hyperledger.fabric.protos.common.Common.Envelope;
-import org.hyperledger.fabric.protos.common.Common.Payload;
-import org.hyperledger.fabric.protos.msp.Identities.SerializedIdentity;
-import org.hyperledger.fabric.protos.peer.ProposalResponsePackage.Endorsement;
-import org.hyperledger.fabric.protos.peer.ProposalResponsePackage.ProposalResponsePayload;
-import org.hyperledger.fabric.protos.peer.ProposalPackage.ChaincodeAction;
-import org.hyperledger.fabric.protos.peer.TransactionPackage.ChaincodeActionPayload;
-import org.hyperledger.fabric.protos.peer.TransactionPackage.ChaincodeEndorsedAction;
-import org.hyperledger.fabric.protos.peer.TransactionPackage.TransactionAction;
+import org.hyperledger.fabric.protos.common.Envelope;
+import org.hyperledger.fabric.protos.common.Payload;
+import org.hyperledger.fabric.protos.msp.SerializedIdentity;
+import org.hyperledger.fabric.protos.peer.ChaincodeAction;
+import org.hyperledger.fabric.protos.peer.ChaincodeActionPayload;
+import org.hyperledger.fabric.protos.peer.ChaincodeEndorsedAction;
+import org.hyperledger.fabric.protos.peer.Endorsement;
+import org.hyperledger.fabric.protos.peer.ProposalResponsePayload;
+import org.hyperledger.fabric.protos.peer.TransactionAction;
 import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
@@ -77,11 +77,15 @@ public class FabricEndorsementProofFactory {
     ) throws Exception {
 
         Envelope envelope = Envelope.parseFrom(envelopeBytes);
-        Payload payload = Payload.parseFrom(envelope.getPayload());
 
-        org.hyperledger.fabric.protos.peer.TransactionPackage.Transaction tx =
-                org.hyperledger.fabric.protos.peer.TransactionPackage.Transaction
-                        .parseFrom(payload.getData());
+        Payload payload = Payload.parseFrom(
+                envelope.getPayload()
+        );
+
+        org.hyperledger.fabric.protos.peer.Transaction tx =
+                org.hyperledger.fabric.protos.peer.Transaction.parseFrom(
+                        payload.getData()
+                );
 
         if (tx.getActionsCount() == 0) {
             throw new IllegalStateException("Transaction has no actions");
@@ -90,7 +94,9 @@ public class FabricEndorsementProofFactory {
         TransactionAction transactionAction = tx.getActions(0);
 
         ChaincodeActionPayload chaincodeActionPayload =
-                ChaincodeActionPayload.parseFrom(transactionAction.getPayload());
+                ChaincodeActionPayload.parseFrom(
+                        transactionAction.getPayload()
+                );
 
         ChaincodeEndorsedAction endorsedAction =
                 chaincodeActionPayload.getAction();
@@ -99,10 +105,14 @@ public class FabricEndorsementProofFactory {
                 endorsedAction.getProposalResponsePayload();
 
         ProposalResponsePayload proposalResponsePayload =
-                ProposalResponsePayload.parseFrom(proposalResponsePayloadBytes);
+                ProposalResponsePayload.parseFrom(
+                        proposalResponsePayloadBytes
+                );
 
         ChaincodeAction chaincodeAction =
-                ChaincodeAction.parseFrom(proposalResponsePayload.getExtension());
+                ChaincodeAction.parseFrom(
+                        proposalResponsePayload.getExtension()
+                );
 
         if (chaincodeAction.getResponse().getStatus() >= 400) {
             throw new IllegalStateException(
@@ -113,20 +123,22 @@ public class FabricEndorsementProofFactory {
 
         List<FabricEndorsementInfo> result = new ArrayList<>();
 
+        String proposalResponsePayloadBase64 =
+                Base64.getEncoder().encodeToString(
+                        proposalResponsePayloadBytes.toByteArray()
+                );
+
         for (Endorsement endorsement : endorsedAction.getEndorsementsList()) {
             SerializedIdentity identity =
-                    SerializedIdentity.parseFrom(endorsement.getEndorser());
+                    SerializedIdentity.parseFrom(
+                            endorsement.getEndorser()
+                    );
 
             String mspId = identity.getMspid();
 
             String endorserCertificateBase64 =
                     Base64.getEncoder().encodeToString(
                             identity.getIdBytes().toByteArray()
-                    );
-
-            String proposalResponsePayloadBase64 =
-                    Base64.getEncoder().encodeToString(
-                            proposalResponsePayloadBytes.toByteArray()
                     );
 
             String signatureBase64 =

@@ -11,7 +11,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
-import org.springframework.web.client.RestClientException;
 
 @Component
 @RequiredArgsConstructor
@@ -25,20 +24,12 @@ public class FabricOrchestratorAccountClient implements FabricAccountProofGatewa
             fallbackMethod = "openAccountFallback"
     )
     public FabricProofEnvelope openAccount(OpenAccountRequest request) {
-        try {
-            return fabricOrchestratorRestClient
-                    .post()
-                    .uri("/fabric/account/open-account-proof")
-                    .body(request)
-                    .retrieve()
-                    .body(FabricProofEnvelope.class);
-
-        } catch (RestClientException ex) {
-            throw new AppException(
-                    "Failed to call Fabric Orchestrator for account opening",
-                    HttpStatus.BAD_GATEWAY
-            );
-        }
+        return fabricOrchestratorRestClient
+                .post()
+                .uri("/fabric/account/open-account-proof")
+                .body(request)
+                .retrieve()
+                .body(FabricProofEnvelope.class);
     }
 
     @Override
@@ -47,20 +38,12 @@ public class FabricOrchestratorAccountClient implements FabricAccountProofGatewa
             fallbackMethod = "balanceFallback"
     )
     public FabricProofEnvelope getBalanceProof(BalanceProofRequest request) {
-        try {
-            return fabricOrchestratorRestClient
-                    .post()
-                    .uri("/fabric/account/balance-proof")
-                    .body(request)
-                    .retrieve()
-                    .body(FabricProofEnvelope.class);
-
-        } catch (RestClientException ex) {
-            throw new AppException(
-                    "Failed to call Fabric Orchestrator for balance proof",
-                    HttpStatus.BAD_GATEWAY
-            );
-        }
+        return fabricOrchestratorRestClient
+                .post()
+                .uri("/fabric/account/balance-proof")
+                .body(request)
+                .retrieve()
+                .body(FabricProofEnvelope.class);
     }
 
     @Override
@@ -69,20 +52,12 @@ public class FabricOrchestratorAccountClient implements FabricAccountProofGatewa
             fallbackMethod = "transferFallback"
     )
     public FabricProofEnvelope transfer(TransferMoneyRequest request) {
-        try {
-            return fabricOrchestratorRestClient
-                    .post()
-                    .uri("/fabric/account/transfer-proof")
-                    .body(request)
-                    .retrieve()
-                    .body(FabricProofEnvelope.class);
-
-        } catch (RestClientException ex) {
-            throw new AppException(
-                    "Failed to call Fabric Orchestrator for transfer",
-                    HttpStatus.BAD_GATEWAY
-            );
-        }
+        return fabricOrchestratorRestClient
+                .post()
+                .uri("/fabric/account/transfer-proof")
+                .body(request)
+                .retrieve()
+                .body(FabricProofEnvelope.class);
     }
 
     public FabricProofEnvelope openAccountFallback(

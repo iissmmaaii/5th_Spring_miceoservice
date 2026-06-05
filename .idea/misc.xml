@@ -7,6 +7,8 @@
         <option value="$PROJECT_DIR$/services/iam/pom.xml" />
         <option value="$PROJECT_DIR$/services/fabric-orchestrator-service/pom.xml" />
         <option value="$PROJECT_DIR$/services/account-service/pom.xml" />
+        <option value="$PROJECT_DIR$/services/api-gateway/pom.xml" />
+        <option value="$PROJECT_DIR$/services/file-service/pom.xml" />
       </list>
     </option>
   </component>
