@@ -8,6 +8,7 @@ import com.cyphervault.account_service.account.dto.request.TransferMoneyRequest;
 import com.cyphervault.account_service.common.exception.AppException;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
@@ -18,18 +19,26 @@ public class FabricOrchestratorAccountClient implements FabricAccountProofGatewa
 
     private final RestClient fabricOrchestratorRestClient;
 
+    private static final ParameterizedTypeReference<OrchestratorApiResponse<FabricProofEnvelope>>
+            FABRIC_PROOF_RESPONSE_TYPE =
+            new ParameterizedTypeReference<>() {
+            };
+
     @Override
     @CircuitBreaker(
             name = "fabricOrchestrator",
             fallbackMethod = "openAccountFallback"
     )
     public FabricProofEnvelope openAccount(OpenAccountRequest request) {
-        return fabricOrchestratorRestClient
-                .post()
-                .uri("/fabric/account/open-account-proof")
-                .body(request)
-                .retrieve()
-                .body(FabricProofEnvelope.class);
+        OrchestratorApiResponse<FabricProofEnvelope> response =
+                fabricOrchestratorRestClient
+                        .post()
+                        .uri("/fabric/account/open-account-proof")
+                        .body(request)
+                        .retrieve()
+                        .body(FABRIC_PROOF_RESPONSE_TYPE);
+
+        return extractFabricProofEnvelope(response, "opening account");
     }
 
     @Override
@@ -38,12 +47,15 @@ public class FabricOrchestratorAccountClient implements FabricAccountProofGatewa
             fallbackMethod = "balanceFallback"
     )
     public FabricProofEnvelope getBalanceProof(BalanceProofRequest request) {
-        return fabricOrchestratorRestClient
-                .post()
-                .uri("/fabric/account/balance-proof")
-                .body(request)
-                .retrieve()
-                .body(FabricProofEnvelope.class);
+        OrchestratorApiResponse<FabricProofEnvelope> response =
+                fabricOrchestratorRestClient
+                        .post()
+                        .uri("/fabric/account/balance-proof")
+                        .body(request)
+                        .retrieve()
+                        .body(FABRIC_PROOF_RESPONSE_TYPE);
+
+        return extractFabricProofEnvelope(response, "getting balance proof");
     }
 
     @Override
@@ -52,12 +64,45 @@ public class FabricOrchestratorAccountClient implements FabricAccountProofGatewa
             fallbackMethod = "transferFallback"
     )
     public FabricProofEnvelope transfer(TransferMoneyRequest request) {
-        return fabricOrchestratorRestClient
-                .post()
-                .uri("/fabric/account/transfer-proof")
-                .body(request)
-                .retrieve()
-                .body(FabricProofEnvelope.class);
+        OrchestratorApiResponse<FabricProofEnvelope> response =
+                fabricOrchestratorRestClient
+                        .post()
+                        .uri("/fabric/account/transfer-proof")
+                        .body(request)
+                        .retrieve()
+                        .body(FABRIC_PROOF_RESPONSE_TYPE);
+
+        return extractFabricProofEnvelope(response, "submitting transfer");
+    }
+
+    private FabricProofEnvelope extractFabricProofEnvelope(
+            OrchestratorApiResponse<FabricProofEnvelope> response,
+            String operation
+    ) {
+        if (response == null) {
+            throw new AppException(
+                    "Fabric Orchestrator returned empty response while " + operation,
+                    HttpStatus.BAD_GATEWAY
+            );
+        }
+
+        if (!Boolean.TRUE.equals(response.success())) {
+            throw new AppException(
+                    response.message() == null
+                            ? "Fabric Orchestrator failed while " + operation
+                            : response.message(),
+                    HttpStatus.BAD_GATEWAY
+            );
+        }
+
+        if (response.data() == null) {
+            throw new AppException(
+                    "Fabric Orchestrator returned empty proof data while " + operation,
+                    HttpStatus.BAD_GATEWAY
+            );
+        }
+
+        return response.data();
     }
 
     public FabricProofEnvelope openAccountFallback(
@@ -88,5 +133,12 @@ public class FabricOrchestratorAccountClient implements FabricAccountProofGatewa
                 "Fabric Orchestrator is temporarily unavailable while submitting transfer",
                 HttpStatus.SERVICE_UNAVAILABLE
         );
+    }
+
+    public record OrchestratorApiResponse<T>(
+            Boolean success,
+            String message,
+            T data
+    ) {
     }
 }

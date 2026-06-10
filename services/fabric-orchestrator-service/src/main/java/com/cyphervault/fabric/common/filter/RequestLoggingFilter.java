@@ -1,6 +1,6 @@
 package com.cyphervault.fabric.common.filter;
 
-import com.cyphervault.account_service.common.logging.MdcKeys;
+import com.cyphervault.fabric.common.logging.MdcKeys;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

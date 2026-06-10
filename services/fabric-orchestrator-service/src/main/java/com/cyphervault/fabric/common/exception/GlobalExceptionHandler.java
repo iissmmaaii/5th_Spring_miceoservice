@@ -1,8 +1,8 @@
 package com.cyphervault.fabric.common.exception;
 
-import com.cyphervault.account_service.common.exception.AppException;
-import com.cyphervault.account_service.common.logging.MdcKeys;
-import com.cyphervault.account_service.common.response.ErrorResponse;
+import com.cyphervault.fabric.common.exception.AppException;
+import com.cyphervault.fabric.common.logging.MdcKeys;
+import com.cyphervault.fabric.common.response.ErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;

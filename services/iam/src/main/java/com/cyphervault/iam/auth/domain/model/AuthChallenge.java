@@ -1,6 +1,5 @@
 package com.cyphervault.iam.auth.domain.model;
 
-import com.cyphervault.iam.auth.domain.enums.ChallengePurpose;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -14,7 +13,6 @@ public class AuthChallenge {
     private UUID challengeId;
     private UUID userId;
     private String nonce;
-    private ChallengePurpose purpose;
     private Instant expiresAt;
     private boolean used;
     private Instant createdAt;

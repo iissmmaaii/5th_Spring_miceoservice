@@ -1,34 +1,39 @@
 CREATE TABLE outbox_events (
     id UUID PRIMARY KEY,
 
-    event_type VARCHAR(120) NOT NULL,
-    event_version VARCHAR(20) NOT NULL,
+    event_id VARCHAR(100) NOT NULL UNIQUE,
+
+    aggregate_type VARCHAR(100) NOT NULL,
     aggregate_id VARCHAR(100) NOT NULL,
 
-    topic_name VARCHAR(180) NOT NULL,
-    message_key VARCHAR(180) NOT NULL,
+    event_type VARCHAR(150) NOT NULL,
+    event_version VARCHAR(20) NOT NULL,
+
+    topic VARCHAR(255) NOT NULL,
+    kafka_key VARCHAR(255) NOT NULL,
 
     payload TEXT NOT NULL,
 
     status VARCHAR(30) NOT NULL,
-    attempts INTEGER NOT NULL DEFAULT 0,
+    attempts INT NOT NULL DEFAULT 0,
 
-    next_retry_at TIMESTAMPTZ NOT NULL,
-    created_at TIMESTAMPTZ NOT NULL,
-    sent_at TIMESTAMPTZ NULL,
+    next_attempt_at TIMESTAMPTZ NOT NULL,
+    locked_at TIMESTAMPTZ NULL,
+    published_at TIMESTAMPTZ NULL,
 
     last_error TEXT NULL,
 
-    kafka_partition INTEGER NULL,
-    kafka_offset BIGINT NULL,
+    created_at TIMESTAMPTZ NOT NULL,
+    updated_at TIMESTAMPTZ NOT NULL,
 
-    publishing_started_at TIMESTAMPTZ NULL,
-
-    version BIGINT NOT NULL DEFAULT 0
+    version BIGINT DEFAULT 0
 );
 
-CREATE INDEX idx_outbox_status_retry
-ON outbox_events (status, next_retry_at);
+CREATE UNIQUE INDEX idx_outbox_event_id
+ON outbox_events(event_id);
 
-CREATE INDEX idx_outbox_publishing_started
-ON outbox_events (status, publishing_started_at);
+CREATE INDEX idx_outbox_status_next_attempt_created
+ON outbox_events(status, next_attempt_at, created_at);
+
+CREATE INDEX idx_outbox_publishing_locked_at
+ON outbox_events(status, locked_at);

@@ -23,7 +23,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class CreateChallengeUseCase {
 
-    private static final long EXPIRES_IN_SECONDS = 120;
+    private static final long EXPIRES_IN_SECONDS = 600;
 
     private final UserAccountRepository userAccountRepository;
     private final AuthChallengeRepository authChallengeRepository;

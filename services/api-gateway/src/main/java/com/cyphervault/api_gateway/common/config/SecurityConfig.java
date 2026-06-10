@@ -57,7 +57,9 @@ public class SecurityConfig {
 
                                 "/api/auth/v3/api-docs",
                                 "/api/accounts/v3/api-docs",
-                                "/api/files/v3/api-docs"
+                                "/api/files/v3/api-docs",
+                                "/api/auth/dev/sign",
+                                "/api/auth/dev/keypair"
                         ).permitAll()
 
                         .requestMatchers(

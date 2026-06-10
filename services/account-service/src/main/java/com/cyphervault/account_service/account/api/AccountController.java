@@ -12,6 +12,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 @RestController
 @RequestMapping("/api/accounts")
 @RequiredArgsConstructor
@@ -23,9 +25,10 @@ public class AccountController {
 
     @PostMapping("/open")
     public ApiResponse<FabricProofEnvelope> openAccount(
+            @RequestHeader("X-User-Id") UUID currentUserId,
             @Valid @RequestBody OpenAccountRequest request
     ) {
-        FabricProofEnvelope proof = openAccountUseCase.execute(request);
+        FabricProofEnvelope proof = openAccountUseCase.execute(currentUserId, request);
 
         return ApiResponse.success(
                 "Account opened with Fabric proof",
@@ -35,9 +38,10 @@ public class AccountController {
 
     @PostMapping("/balance-proof")
     public ApiResponse<FabricProofEnvelope> getBalanceProof(
+            @RequestHeader("X-User-Id") UUID currentUserId,
             @Valid @RequestBody BalanceProofRequest request
     ) {
-        FabricProofEnvelope proof = getBalanceProofUseCase.execute(request);
+        FabricProofEnvelope proof = getBalanceProofUseCase.execute(currentUserId, request);
 
         return ApiResponse.success(
                 "Balance proof retrieved successfully",
@@ -47,9 +51,10 @@ public class AccountController {
 
     @PostMapping("/transfer")
     public ApiResponse<FabricProofEnvelope> transfer(
+            @RequestHeader("X-User-Id") UUID currentUserId,
             @Valid @RequestBody TransferMoneyRequest request
     ) {
-        FabricProofEnvelope proof = transferMoneyUseCase.execute(request);
+        FabricProofEnvelope proof = transferMoneyUseCase.execute(currentUserId, request);
 
         return ApiResponse.success(
                 "Transfer submitted with Fabric proof",

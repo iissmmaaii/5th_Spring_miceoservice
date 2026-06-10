@@ -1,4 +1,4 @@
-package com.cyphervault.fabric.account.infrastructure.fabric;
+ package com.cyphervault.fabric.account.infrastructure.fabric;
 
 import com.cyphervault.fabric.account.dto.proof.FabricEndorsementInfo;
 import com.cyphervault.fabric.account.dto.proof.FabricProofEnvelope;
@@ -15,6 +15,7 @@ import org.hyperledger.fabric.protos.peer.ProposalResponsePayload;
 import org.hyperledger.fabric.protos.peer.TransactionAction;
 import org.springframework.stereotype.Component;
 
+import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.ArrayList;
@@ -42,13 +43,18 @@ public class FabricEndorsementProofFactory {
             String payloadHash = sha256Hex(payloadJson);
             String fabricTxId = endorsedTransaction.getTransactionId();
 
-            byte[] envelopeBytes = endorsedTransaction.getBytes();
+            byte[] transactionBytes = endorsedTransaction.getBytes();
+
+            Envelope transactionEnvelope =
+                    extractTransactionEnvelope(transactionBytes);
 
             List<FabricEndorsementInfo> endorsements =
-                    extractEndorsements(envelopeBytes);
+                    extractEndorsementsFromEnvelope(transactionEnvelope);
 
             String envelopeBase64 =
-                    Base64.getEncoder().encodeToString(envelopeBytes);
+                    Base64.getEncoder().encodeToString(
+                            transactionEnvelope.toByteArray()
+                    );
 
             return FabricProofEnvelope.builder()
                     .payloadJson(payloadJson)
@@ -72,11 +78,97 @@ public class FabricEndorsementProofFactory {
         }
     }
 
-    private List<FabricEndorsementInfo> extractEndorsements(
-            byte[] envelopeBytes
-    ) throws Exception {
+    private Envelope extractTransactionEnvelope(byte[] transactionBytes) throws Exception {
+        List<Exception> failures = new ArrayList<>();
 
-        Envelope envelope = Envelope.parseFrom(envelopeBytes);
+        try {
+            Envelope envelope = extractEnvelopeFromPreparedTransaction(transactionBytes);
+            validateEnvelope(envelope);
+            return envelope;
+        } catch (Exception ex) {
+            failures.add(ex);
+        }
+
+        try {
+            Envelope envelope = Envelope.parseFrom(transactionBytes);
+            validateEnvelope(envelope);
+            return envelope;
+        } catch (Exception ex) {
+            failures.add(ex);
+        }
+
+        IllegalStateException error = new IllegalStateException(
+                "Unsupported endorsed transaction bytes format. Tried PreparedTransaction and Envelope."
+        );
+
+        for (Exception failure : failures) {
+            error.addSuppressed(failure);
+        }
+
+        throw error;
+    }
+
+    private Envelope extractEnvelopeFromPreparedTransaction(byte[] transactionBytes) throws Exception {
+        Class<?> preparedTransactionClass =
+                Class.forName("org.hyperledger.fabric.protos.gateway.PreparedTransaction");
+
+        Method parseFromMethod =
+                preparedTransactionClass.getMethod("parseFrom", byte[].class);
+
+        Object preparedTransaction =
+                parseFromMethod.invoke(null, transactionBytes);
+
+        for (Method method : preparedTransactionClass.getMethods()) {
+            if (method.getParameterCount() != 0) {
+                continue;
+            }
+
+            Class<?> returnType = method.getReturnType();
+            String methodName = method.getName().toLowerCase();
+
+            if (Envelope.class.isAssignableFrom(returnType)) {
+                Object value = method.invoke(preparedTransaction);
+
+                if (value instanceof Envelope envelope) {
+                    validateEnvelope(envelope);
+                    return envelope;
+                }
+            }
+
+            if (ByteString.class.isAssignableFrom(returnType)
+                    && (methodName.contains("transaction")
+                    || methodName.contains("envelope"))) {
+
+                Object value = method.invoke(preparedTransaction);
+
+                if (value instanceof ByteString byteString && !byteString.isEmpty()) {
+                    Envelope envelope = Envelope.parseFrom(byteString.toByteArray());
+                    validateEnvelope(envelope);
+                    return envelope;
+                }
+            }
+        }
+
+        throw new IllegalStateException(
+                "PreparedTransaction parsed, but no transaction envelope field was found"
+        );
+    }
+
+    private void validateEnvelope(Envelope envelope) throws Exception {
+        if (envelope == null) {
+            throw new IllegalStateException("Envelope is null");
+        }
+
+        if (envelope.getPayload() == null || envelope.getPayload().isEmpty()) {
+            throw new IllegalStateException("Envelope payload is empty");
+        }
+
+        Payload.parseFrom(envelope.getPayload());
+    }
+
+    private List<FabricEndorsementInfo> extractEndorsementsFromEnvelope(
+            Envelope envelope
+    ) throws Exception {
 
         Payload payload = Payload.parseFrom(
                 envelope.getPayload()

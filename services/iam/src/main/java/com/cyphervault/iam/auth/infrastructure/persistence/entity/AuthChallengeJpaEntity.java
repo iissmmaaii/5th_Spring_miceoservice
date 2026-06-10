@@ -1,6 +1,5 @@
 package com.cyphervault.iam.auth.infrastructure.persistence.entity;
 
-import com.cyphervault.iam.auth.domain.enums.ChallengePurpose;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -14,8 +13,7 @@ import java.util.UUID;
                 @Index(name = "idx_challenges_user_id", columnList = "user_id"),
                 @Index(name = "idx_challenges_expires_at", columnList = "expires_at"),
                 @Index(name = "idx_challenges_used", columnList = "used"),
-                @Index(name = "idx_challenges_user_used", columnList = "user_id,used"),
-                @Index(name = "idx_challenges_user_purpose_used", columnList = "user_id,purpose,used")
+                @Index(name = "idx_challenges_user_used", columnList = "user_id,used")
         }
 )
 @Getter
@@ -41,10 +39,6 @@ public class AuthChallengeJpaEntity {
 
     @Column(name = "nonce", nullable = false, updatable = false, length = 160)
     private String nonce;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "purpose", nullable = false, length = 40)
-    private ChallengePurpose purpose;
 
     @Column(name = "expires_at", nullable = false)
     private Instant expiresAt;

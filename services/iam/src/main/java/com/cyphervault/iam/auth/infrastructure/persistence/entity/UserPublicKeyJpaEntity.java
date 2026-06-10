@@ -15,10 +15,8 @@ import java.util.UUID;
         },
         indexes = {
                 @Index(name = "idx_public_keys_user_id", columnList = "user_id"),
-                @Index(name = "idx_public_keys_device_id", columnList = "device_id"),
                 @Index(name = "idx_public_keys_status", columnList = "status"),
-                @Index(name = "idx_public_keys_user_status", columnList = "user_id,status"),
-                @Index(name = "idx_public_keys_user_device_status", columnList = "user_id,device_id,status")
+                @Index(name = "idx_public_keys_user_status", columnList = "user_id,status")
         }
 )
 @Getter
@@ -41,9 +39,6 @@ public class UserPublicKeyJpaEntity {
             foreignKey = @ForeignKey(name = "fk_public_keys_user")
     )
     private UserAccountJpaEntity user;
-
-    @Column(name = "device_id", nullable = false, length = 140)
-    private String deviceId;
 
     @Column(name = "public_key_pem", nullable = false, columnDefinition = "TEXT")
     private String publicKeyPem;

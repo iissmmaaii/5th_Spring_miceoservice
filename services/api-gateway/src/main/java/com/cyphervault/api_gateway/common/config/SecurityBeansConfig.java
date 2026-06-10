@@ -17,24 +17,26 @@ import java.nio.charset.StandardCharsets;
 @Configuration
 public class SecurityBeansConfig {
 
+    private static final String SECURITY_SCHEME_NAME = "bearerAuth";
+
     @Bean
     public JwtDecoder jwtDecoder(
             @Value("${security.jwt.secret}") String jwtSecret
     ) {
-        if (jwtSecret == null || jwtSecret.getBytes(StandardCharsets.UTF_8).length < 32) {
+        if (jwtSecret == null || jwtSecret.getBytes(StandardCharsets.UTF_8).length < 64) {
             throw new IllegalStateException(
-                    "security.jwt.secret must be at least 32 bytes for HS256"
+                    "security.jwt.secret must be at least 64 bytes for HS512"
             );
         }
 
         SecretKey secretKey = new SecretKeySpec(
                 jwtSecret.getBytes(StandardCharsets.UTF_8),
-                "HmacSHA256"
+                "HmacSHA512"
         );
 
         return NimbusJwtDecoder
                 .withSecretKey(secretKey)
-                .macAlgorithm(MacAlgorithm.HS256)
+                .macAlgorithm(MacAlgorithm.HS512)
                 .build();
     }
 

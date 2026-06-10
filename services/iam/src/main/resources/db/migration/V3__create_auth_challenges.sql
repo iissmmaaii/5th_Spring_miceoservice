@@ -2,7 +2,6 @@ CREATE TABLE auth_challenges (
     challenge_id UUID NOT NULL,
     user_id UUID NOT NULL,
     nonce VARCHAR(160) NOT NULL,
-    purpose VARCHAR(40) NOT NULL,
     expires_at TIMESTAMP(6) WITH TIME ZONE NOT NULL,
     used BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMP(6) WITH TIME ZONE NOT NULL,
@@ -26,6 +25,3 @@ ON auth_challenges(used);
 
 CREATE INDEX idx_challenges_user_used
 ON auth_challenges(user_id, used);
-
-CREATE INDEX idx_challenges_user_purpose_used
-ON auth_challenges(user_id, purpose, used);

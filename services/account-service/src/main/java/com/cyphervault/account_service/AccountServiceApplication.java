@@ -1,6 +1,6 @@
 package com.cyphervault.account_service;
 
-import com.cyphervault.account_service.Config.FabricOrchestratorProperties;
+import com.cyphervault.account_service.config.FabricOrchestratorProperties;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;

@@ -18,8 +18,7 @@ public class RateLimiterConfiguration {
 
         Caffeine<String, RemoteBucketState> caffeineBuilder =
                 (Caffeine) Caffeine.newBuilder()
-                        .maximumSize(100_000)
-                        .expireAfterAccess(Duration.ofHours(1));
+                        .maximumSize(100_000);
 
         return new CaffeineProxyManager<>(
                 caffeineBuilder,
