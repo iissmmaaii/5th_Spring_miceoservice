@@ -4,6 +4,7 @@ import com.cyphervault.api_gateway.common.middleware.UserContextHeaderFilter;
 import com.cyphervault.api_gateway.common.security.JwtAccessDeniedHandler;
 import com.cyphervault.api_gateway.common.security.JwtAuthenticationEntryPoint;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -21,6 +22,9 @@ public class SecurityConfig {
 
     private final JwtAuthenticationEntryPoint authenticationEntryPoint;
     private final JwtAccessDeniedHandler accessDeniedHandler;
+
+    @Value("${cyphervault.gateway.internal-secret}")
+    private String gatewayInternalSecret;
 
     @Bean
     public SecurityFilterChain securityFilterChain(
@@ -58,6 +62,13 @@ public class SecurityConfig {
                                 "/api/auth/v3/api-docs",
                                 "/api/accounts/v3/api-docs",
                                 "/api/files/v3/api-docs",
+
+                                // Chat-service Swagger from NestJS
+                                "/api/chat/docs",
+                                "/api/chat/docs/**",
+                                "/api/chat/docs-json",
+                                "/api/chat/docs-yaml",
+
                                 "/api/auth/dev/sign",
                                 "/api/auth/dev/keypair"
                         ).permitAll()
@@ -72,6 +83,7 @@ public class SecurityConfig {
 
                         .requestMatchers("/api/accounts/**").authenticated()
                         .requestMatchers("/api/files/**").authenticated()
+                        .requestMatchers("/api/chat/**").authenticated()
 
                         .anyRequest().authenticated()
                 )
@@ -83,7 +95,7 @@ public class SecurityConfig {
                 )
 
                 .addFilterAfter(
-                        new UserContextHeaderFilter(),
+                        new UserContextHeaderFilter(gatewayInternalSecret),
                         BearerTokenAuthenticationFilter.class
                 )
 

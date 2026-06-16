@@ -38,10 +38,8 @@ public class GatewayRoutesConfig {
                         .setKeyResolver(this::clientIpKey)
                 ))
 
-                // Load balance to iam-service instances
                 .filter(lb("iam-service"))
 
-                // Circuit breaker for IAM route
                 .filter(circuitBreaker(config -> config
                         .setId("iamCircuitBreaker")
                         .setFallbackUri("forward:/fallback/iam")
@@ -84,6 +82,31 @@ public class GatewayRoutesConfig {
                 .and(route("file_service_route")
                         .route(path("/api/files/**"), http())
                         .filter(lb("file-service"))
+                        .build()
+                )
+
+                // Chat-service route
+                .and(route("chat_service_route")
+                        .route(path("/api/chat/**"), http())
+
+                        // 120 chat REST requests per minute per user
+                        .filter(rateLimit(config -> config
+                                .setCapacity(120)
+                                .setPeriod(Duration.ofMinutes(1))
+                                .setTokens(1)
+                                .setStatusCode(HttpStatus.TOO_MANY_REQUESTS)
+                                .setHeaderName("X-RateLimit-Remaining")
+                                .setKeyResolver(this::userOrIpKey)
+                        ))
+
+                        .filter(lb("chat-service"))
+
+                        .filter(circuitBreaker(config -> config
+                                .setId("chatCircuitBreaker")
+                                .setFallbackUri("forward:/fallback/chat")
+                                .setStatusCodes("500", "502", "503", "504")
+                        ))
+
                         .build()
                 )
 
