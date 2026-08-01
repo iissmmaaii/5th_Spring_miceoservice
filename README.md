@@ -1,6 +1,6 @@
-# CypherVault Core Banking Microservices
+﻿# CypherVault Core Banking Microservices
 
-> **ملخص عربي:** يحتوي هذا المستودع على الخدمات الخلفية الأساسية لمنصة **CypherVault**، بما في ذلك الهوية والمصادقة، الحسابات والتحويلات، إدارة وثائق التحقق، الإشعارات، بوابة الدخول، والتكامل المقيّد مع السجل المؤسسي المرخّص.
+> **ظ…ظ„ط®طµ ط¹ط±ط¨ظٹ:** ظٹط­طھظˆظٹ ظ‡ط°ط§ ط§ظ„ظ…ط³طھظˆط¯ط¹ ط¹ظ„ظ‰ ط§ظ„ط®ط¯ظ…ط§طھ ط§ظ„ط®ظ„ظپظٹط© ط§ظ„ط£ط³ط§ط³ظٹط© ظ„ظ…ظ†طµط© **CypherVault**طŒ ط¨ظ…ط§ ظپظٹ ط°ظ„ظƒ ط§ظ„ظ‡ظˆظٹط© ظˆط§ظ„ظ…طµط§ط¯ظ‚ط©طŒ ط§ظ„ط­ط³ط§ط¨ط§طھ ظˆط§ظ„طھط­ظˆظٹظ„ط§طھطŒ ط¥ط¯ط§ط±ط© ظˆط«ط§ط¦ظ‚ ط§ظ„طھط­ظ‚ظ‚طŒ ط§ظ„ط¥ط´ط¹ط§ط±ط§طھطŒ ط¨ظˆط§ط¨ط© ط§ظ„ط¯ط®ظˆظ„طŒ ظˆط§ظ„طھظƒط§ظ…ظ„ ط§ظ„ظ…ظ‚ظٹظ‘ط¯ ظ…ط¹ ط§ظ„ط³ط¬ظ„ ط§ظ„ظ…ط¤ط³ط³ظٹ ط§ظ„ظ…ط±ط®ظ‘طµ.
 
 CypherVault is a distributed digital-banking proof of concept. This repository contains the Java/Spring services that own the core business rules, coordinate long-running financial operations, publish domain events, and expose the secured API entry point used by the client applications.
 
@@ -62,18 +62,18 @@ Sensitive multi-stage operations return a trackable initial state. The final bus
 
 ```text
 5th_Spring_miceoservice/
-├── services/
-│   ├── api-gateway/                 # Secured public entry point
-│   ├── iam/                         # Identity, keys and authentication
-│   ├── account-service/             # Accounts, transfers, saga and outbox
-│   ├── file-service/                # KYC document storage and review
-│   ├── notification-service/        # Email notifications
-│   └── fabric-orchestrator-service/ # Controlled institutional-record client
-├── infra/
-│   ├── kafka/                       # Local Kafka and Kafka UI compose file
-│   └── fabric/                      # Local mount point for external Fabric material
-├── docs/                            # Report, diagrams and test evidence
-└── VERIFY_AND_BUILD_FIXED_SERVICES.ps1
+â”œâ”€â”€ services/
+â”‚   â”œâ”€â”€ api-gateway/                 # Secured public entry point
+â”‚   â”œâ”€â”€ iam/                         # Identity, keys and authentication
+â”‚   â”œâ”€â”€ account-service/             # Accounts, transfers, saga and outbox
+â”‚   â”œâ”€â”€ file-service/                # KYC document storage and review
+â”‚   â”œâ”€â”€ notification-service/        # Email notifications
+â”‚   â””â”€â”€ fabric-orchestrator-service/ # Controlled institutional-record client
+â”œâ”€â”€ infra/
+â”‚   â”œâ”€â”€ kafka/                       # Local Kafka and Kafka UI compose file
+â”‚   â””â”€â”€ fabric/                      # Local mount point for external Fabric material
+â”œâ”€â”€ docs/                            # Report, diagrams and test evidence
+â””â”€â”€ VERIFY_AND_BUILD_FIXED_SERVICES.ps1
 ```
 
 ## Technologies
@@ -212,18 +212,6 @@ cd services\account-service
 
 The submission evidence should include unit/integration results, security tests, duplicate-transfer protection, load testing, stress testing, autoscaling evidence and distributed tracing screenshots under `docs/test-results/`.
 
-## Documentation
-
-The `docs/` directory is reserved for committee material:
-
-```text
-docs/
-├── report/         # Final/minimized DOCX and PDF report
-├── architecture/   # High-resolution diagrams
-├── test-results/   # Test plans, screenshots and result files
-└── demo/           # Demo instructions or video link
-```
-
 ## Security notes
 
 - The customer private key stays on the client device.
@@ -232,7 +220,22 @@ docs/
 - Operational databases remain private to their owning service.
 - The permissioned record stores selected proofs, not identity documents or chat content.
 - An uncertain transfer result is reconciled before any retry that could duplicate money movement.
+## Monitoring and Observability
 
-## Academic scope
+The CypherVault backend services are monitored using Prometheus and Grafana.
 
-This code is a graduation-project proof of concept. It demonstrates secure service boundaries, asynchronous coordination, auditable financial workflows and controlled institutional proof. Production deployment requires hardened secret management, certificate rotation, infrastructure automation, backup policies and an independent security review.
+### Grafana Dashboard
+
+- URL: [Open Grafana](http://172.29.5.41:30300)
+- Username: `admin`
+- Password: `d02ced2d9c96528173903f69459fb6a5f9dd!Aa9`
+
+Grafana provides dashboards for monitoring:
+
+- Spring Boot application metrics.
+- HTTP request rates and response times.
+- JVM memory and CPU usage.
+- Kubernetes pods and deployments.
+- Service availability and error rates.
+- Horizontal Pod Autoscaler activity.
+
